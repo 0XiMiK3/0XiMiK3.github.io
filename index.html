@@ -54,7 +54,7 @@
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+           100% { transform: scale(1); }
         }
         
         @keyframes confetti {
@@ -561,7 +561,8 @@
         }
         
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 15px 20px;
             border: 1px solid #ddd;
@@ -572,7 +573,8 @@
         }
         
         .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group textarea:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
@@ -594,6 +596,27 @@
         .attendance-option input {
             width: auto;
             margin: 0;
+        }
+
+        /* Стили для уведомлений */
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         
         /* Футер */
@@ -734,6 +757,12 @@
             .color-item {
                 width: 100px;
             }
+            
+            .attendance-options {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
         }
         
         @media (max-width: 480px) {
@@ -761,11 +790,95 @@
             .section-title {
                 font-size: 2rem;
             }
-            
-            .attendance-options {
-                flex-direction: column;
-                gap: 10px;
-            }
+        }
+
+        /* Стили для упрощенной формы */
+        .simple-form {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 25px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 0 auto;
+        }
+        
+        .simple-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        .form-row label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #8b4513;
+        }
+        
+        .form-row input[type="text"],
+        .form-row textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .form-row input[type="text"]:focus,
+        .form-row textarea:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+        
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #d4af37;
+            color: #1a120b;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            background: #e6c158;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+        
+        .form-message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -911,7 +1024,7 @@
                     <div class="timeline-content">
                         <div class="timeline-time">11:30</div>
                         <h3>Церемония в ЗАГСе</h3>
-                        <p>Санкт-Петербург, Центральный дворец бракосочетания</p>
+                        <p>Москва, Центральный дворец бракосочетания №1</p>
                     </div>
                 </div>
                 
@@ -920,7 +1033,8 @@
                     <div class="timeline-content">
                         <div class="timeline-time">17:00</div>
                         <h3>Сбор гостей</h3>
-                        <p>Фуршет и welcome-коктейли в банкетном зале</p>
+                        <p>Фуршет и интерактивы в банкетном зале</p>
+                        <p class="timeline-note">Знакомство и неформальное общение</p>
                     </div>
                 </div>
                 
@@ -930,6 +1044,16 @@
                         <div class="timeline-time">17:30</div>
                         <h3>Начало банкета</h3>
                         <p>Торжественный вход молодоженов</p>
+                        <p class="timeline-note">Первый танец</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-time">18:30</div>
+                        <h3>Романтический ужин</h3>
+                        <p>Теплые речи и поздравления</p>
                     </div>
                 </div>
                 
@@ -938,7 +1062,25 @@
                     <div class="timeline-content">
                         <div class="timeline-time">19:30</div>
                         <h3>Развлекательная программа</h3>
-                        <p>Танцы, конкурсы и сюрпризы</p>
+                        <p>Танцы, конкурсы и фотоквесты</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-time">21:00</div>
+                        <h3>Бросание букета</h3>
+                        <p class="timeline-note">Кому повезет в следующий раз?</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-time">22:00</div>
+                        <h3>Танцевальный марафон</h3>
+                        <p>Танцы</p>
                     </div>
                 </div>
                 
@@ -956,7 +1098,7 @@
                     <div class="timeline-content">
                         <div class="timeline-time">00:00</div>
                         <h3>Финальный аккорд</h3>
-                        <p>Фейерверк и прощание с гостями</p>
+                        <p>Бенгальские огни и прощание с гостями</p>
                     </div>
                 </div>
             </div>
@@ -970,19 +1112,19 @@
             
             <div class="gallery">
                 <div class="gallery-item">
-                    <img src="https://github.com/0XiMiK3/0XiMiK3.github.io/blob/4eed511b05b706955273473345b5a6f470e284eb/photo_1.jpg" alt="Наше фото">
+                    <img src="https://raw.githubusercontent.com/0XiMiK3/0XiMiK3.github.io/main/photo_1.jpg" alt="Наше фото">
                     <div class="gallery-caption">Первая встреча</div>
                 </div>
                 <div class="gallery-item">
-                    <img src="https://github.com/0XiMiK3/0XiMiK3.github.io/blob/4eed511b05b706955273473345b5a6f470e284eb/photo_2.jpg" alt="Наше фото">
+                    <img src="https://raw.githubusercontent.com/0XiMiK3/0XiMiK3.github.io/main/photo_2.jpg" alt="Наше фото">
                     <div class="gallery-caption">Совместный отдых</div>
                 </div>
                 <div class="gallery-item">
-                    <img src="https://github.com/0XiMiK3/0XiMiK3.github.io/blob/4eed511b05b706955273473345b5a6f470e284eb/photo_3.jpg" alt="Наше фото">
+                    <img src="https://raw.githubusercontent.com/0XiMiK3/0XiMiK3.github.io/main/photo_3.jpg" alt="Наше фото">
                     <div class="gallery-caption">Прогулка с семьей</div>
                 </div>
                 <div class="gallery-item">
-                    <img src="https://github.com/0XiMiK3/0XiMiK3.github.io/blob/4eed511b05b706955273473345b5a6f470e284eb/photo_4.jpg" alt="Наше фото">
+                    <img src="https://raw.githubusercontent.com/0XiMiK3/0XiMiK3.github.io/main/photo_4.jpg" alt="Наше фото">
                     <div class="gallery-caption">Предложение</div>
                 </div>
             </div>
@@ -995,33 +1137,35 @@
             <h2 class="section-title">Подтвердите присутствие</h2>
             <p style="margin-bottom: 40px;">Пожалуйста, ответьте до 1 ноября 2025 года</p>
             
-            <form class="rsvp-form" id="weddingForm">
-                <div class="form-group">
-                    <label for="name">Ваше имя</label>
-                    <input type="text" id="name" name="name" required>
+            <div class="simple-form">
+                <div id="form-message" class="form-message"></div>
+                
+                <div class="form-row">
+                    <label for="guest-name">Ваше имя *</label>
+                    <input type="text" id="guest-name" placeholder="Введите ваше имя" required>
                 </div>
                 
-                <div class="form-group">
-                    <label>Вы придёте на нашу свадьбу?</label>
+                <div class="form-row">
+                    <label>Вы придете на свадьбу? *</label>
                     <div class="attendance-options">
                         <label class="attendance-option">
                             <input type="radio" name="attendance" value="yes" required>
-                            С радостью буду!
+                            <span>Да, буду</span>
                         </label>
                         <label class="attendance-option">
                             <input type="radio" name="attendance" value="no">
-                            К сожалению, не смогу
+                            <span>Не смогу прийти</span>
                         </label>
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="message">Ваши пожелания (по желанию)</label>
-                    <textarea id="message" name="message" rows="4" placeholder="Ваши теплые слова и пожелания..."></textarea>
+                <div class="form-row">
+                    <label for="guest-comment">Ваш комментарий (необязательно)</label>
+                    <textarea id="guest-comment" rows="3" placeholder="Ваши пожелания или комментарии..."></textarea>
                 </div>
                 
-                <button type="submit" class="btn">Подтвердить присутствие</button>
-            </form>
+                <button class="submit-btn" id="submit-response">Отправить ответ</button>
+            </div>
         </div>
     </section>
     
@@ -1127,32 +1271,20 @@
                 }
             }
             
-            // Обработка формы
-            document.getElementById('weddingForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+            // Функция для показа сообщений
+            function showMessage(text, type) {
+                const messageDiv = document.getElementById('form-message');
+                messageDiv.textContent = text;
+                messageDiv.className = `form-message ${type}`;
+                messageDiv.style.display = 'block';
                 
-                // Собираем данные формы
-                const formData = {
-                    name: document.getElementById('name').value,
-                    attendance: document.querySelector('input[name="attendance"]:checked').value,
-                    message: document.getElementById('message').value,
-                    timestamp: new Date().toLocaleString('ru-RU')
-                };
-                
-                // Сохраняем данные в localStorage
-                saveResponse(formData);
-                
-                // Создаем конфетти при подтверждении
-                createConfetti();
-                
-                // Показываем уведомление
-                showNotification();
-                
-                // Очищаем форму
-                this.reset();
-            });
+                // Скрываем сообщение через 5 секунд
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
             
-            // Функция для сохранения ответов
+            // Функция для сохранения ответа
             function saveResponse(data) {
                 // Получаем существующие ответы или создаем новый массив
                 let responses = JSON.parse(localStorage.getItem('weddingResponses')) || [];
@@ -1162,7 +1294,61 @@
                 
                 // Сохраняем обратно в localStorage
                 localStorage.setItem('weddingResponses', JSON.stringify(responses));
+                
+                // Также пытаемся сохранить в GitHub (если есть доступ)
+                saveToGitHub(data);
             }
+            
+            // Функция для сохранения в GitHub
+            function saveToGitHub(data) {
+                // В реальной реализации здесь будет код для сохранения в GitHub
+                // Для этого нужно использовать GitHub API или другие методы
+                console.log('Данные для сохранения в GitHub:', data);
+                
+                // Это просто заглушка для демонстрации
+                // В реальном сценарии здесь был бы fetch запрос к API GitHub
+            }
+            
+            // Обработка simplified формы
+            document.getElementById('submit-response').addEventListener('click', function() {
+                const name = document.getElementById('guest-name').value.trim();
+                const attendance = document.querySelector('input[name="attendance"]:checked');
+                const comment = document.getElementById('guest-comment').value.trim();
+                const messageDiv = document.getElementById('form-message');
+                
+                // Проверяем заполненность обязательных полей
+                if (!name) {
+                    showMessage('Пожалуйста, введите ваше имя', 'error');
+                    return;
+                }
+                
+                if (!attendance) {
+                    showMessage('Пожалуйста, укажите, придете ли вы на свадьбу', 'error');
+                    return;
+                }
+                
+                // Собираем данные
+                const responseData = {
+                    name: name,
+                    attendance: attendance.value,
+                    comment: comment,
+                    timestamp: new Date().toLocaleString('ru-RU')
+                };
+                
+                // Сохраняем ответ
+                saveResponse(responseData);
+                
+                // Показываем сообщение об успехе
+                showMessage('Спасибо за ваш ответ! Мы сохранили ваши данные.', 'success');
+                
+                // Очищаем форму
+                document.getElementById('guest-name').value = '';
+                document.querySelectorAll('input[name="attendance"]').forEach(input => input.checked = false);
+                document.getElementById('guest-comment').value = '';
+                
+                // Создаем конфетти для праздничного эффекта
+                createConfetti();
+            });
             
             // Плавная прокрутка для навигации
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {

@@ -880,6 +880,77 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
+        /* Стили для кнопки скачивания */
+        .download-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 25px;
+            background: #8b4513;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: #6b3410;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+        
+        /* Стили для админ-панели */
+        .admin-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            margin: 40px auto;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-panel h3 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #8b4513;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+        }
+        
+        .responses-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        
+        .responses-table th, 
+        .responses-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .responses-table th {
+            background-color: #f4e8c5;
+            color: #5a0b11;
+            font-weight: 600;
+        }
+        
+        .responses-table tr:hover {
+            background-color: #f9f5eb;
+        }
+        
+        .no-responses {
+            text-align: center;
+            padding: 20px;
+            color: #90909C;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -1044,7 +1115,7 @@
                         <div class="timeline-time">17:30</div>
                         <h3>Начало банкета</h3>
                         <p>Торжественный вход молодоженов</p>
-                        <p class="timeline-note">Первый танец</p>
+                        <p class="timeline-note">Первый танес</p>
                     </div>
                 </div>
                 
@@ -1165,6 +1236,28 @@
                 </div>
                 
                 <button class="submit-btn" id="submit-response">Отправить ответ</button>
+            </div>
+            
+            <!-- Админ-панель для просмотра и скачивания ответов -->
+            <div class="admin-panel" id="admin-panel" style="display: none;">
+                <h3>Ответы гостей</h3>
+                <div id="responses-container">
+                    <table class="responses-table">
+                        <thead>
+                            <tr>
+                                <th>Имя</th>
+                                <th>Присутствие</th>
+                                <th>Комментарий</th>
+                                <th>Дата ответа</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responses-table-body">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                    <div id="no-responses" class="no-responses">Пока нет ответов от гостей</div>
+                </div>
+                <button class="download-btn" id="download-btn">Скачать ответы (CSV)</button>
             </div>
         </div>
     </section>
@@ -1295,18 +1388,97 @@
                 // Сохраняем обратно в localStorage
                 localStorage.setItem('weddingResponses', JSON.stringify(responses));
                 
-                // Также пытаемся сохранить в GitHub (если есть доступ)
-                saveToGitHub(data);
+                // Обновляем таблицу ответов
+                updateResponsesTable();
             }
             
-            // Функция для сохранения в GitHub
-            function saveToGitHub(data) {
-                // В реальной реализации здесь будет код для сохранения в GitHub
-                // Для этого нужно использовать GitHub API или другие методы
-                console.log('Данные для сохранения в GitHub:', data);
+            // Функция для обновления таблицы ответов
+            function updateResponsesTable() {
+                const responses = JSON.parse(localStorage.getItem('weddingResponses')) || [];
+                const tableBody = document.getElementById('responses-table-body');
+                const noResponsesDiv = document.getElementById('no-responses');
                 
-                // Это просто заглушка для демонстрации
-                // В реальном сценарии здесь был бы fetch запрос к API GitHub
+                // Очищаем таблицу
+                tableBody.innerHTML = '';
+                
+                if (responses.length === 0) {
+                    noResponsesDiv.style.display = 'block';
+                    return;
+                }
+                
+                noResponsesDiv.style.display = 'none';
+                
+                // Заполняем таблицу данными
+                responses.forEach(response => {
+                    const row = document.createElement('tr');
+                    
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = response.name;
+                    
+                    const attendanceCell = document.createElement('td');
+                    attendanceCell.textContent = response.attendance === 'yes' ? 'Придет' : 'Не придет';
+                    
+                    const commentCell = document.createElement('td');
+                    commentCell.textContent = response.comment || '-';
+                    
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = response.timestamp;
+                    
+                    row.appendChild(nameCell);
+                    row.appendChild(attendanceCell);
+                    row.appendChild(commentCell);
+                    row.appendChild(dateCell);
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Функция для скачивания ответов в формате CSV
+            function downloadResponsesCSV() {
+                const responses = JSON.parse(localStorage.getItem('weddingResponses')) || [];
+                
+                if (responses.length === 0) {
+                    alert('Нет данных для скачивания');
+                    return;
+                }
+                
+                // Создаем заголовки CSV
+                let csvContent = "Имя,Присутствие,Комментарий,Дата ответа\n";
+                
+                // Добавляем данные
+                responses.forEach(response => {
+                    const row = [
+                        `"${response.name.replace(/"/g, '""')}"`,
+                        response.attendance === 'yes' ? 'Придет' : 'Не придет',
+                        `"${(response.comment || '').replace(/"/g, '""')}"`,
+                        `"${response.timestamp}"`
+                    ];
+                    csvContent += row.join(',') + '\n';
+                });
+                
+                // Создаем Blob и ссылку для скачивания
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                const date = new Date().toLocaleDateString('ru-RU').replace(/\./g, '-');
+                
+                link.setAttribute("href", url);
+                link.setAttribute("download", `ответы_гостей_${date}.csv`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Показать админ-панель для организаторов
+            function checkAdminAccess() {
+                // Простая проверка - если в URL есть параметр admin=true
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('admin') === 'true') {
+                    document.getElementById('admin-panel').style.display = 'block';
+                    updateResponsesTable();
+                }
             }
             
             // Обработка simplified формы
@@ -1349,6 +1521,12 @@
                 // Создаем конфетти для праздничного эффекта
                 createConfetti();
             });
+            
+            // Обработчик для кнопки скачивания
+            document.getElementById('download-btn').addEventListener('click', downloadResponsesCSV);
+            
+            // Проверяем доступ к админ-панели
+            checkAdminAccess();
             
             // Плавная прокрутка для навигации
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {

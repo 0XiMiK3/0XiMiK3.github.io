@@ -951,6 +951,24 @@
             color: #90909C;
             font-style: italic;
         }
+
+        /* Упрощенные стили для автономной версии */
+        .local-storage-info {
+            background-color: #e2f0fd;
+            border: 1px solid #bee5eb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .admin-access {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -1051,7 +1069,7 @@
                 </div>
                 <div class="info-card-content">
                     <h3>Дресс-код</h3>
-                    <p>Мы будем рады, если вы поддержите цветовую палитру нашего праздника:</p>
+                    <p>Мы буден рады, если вы поддержите цветовую палитру нашего праздника:</p>
                     
                     <div class="dress-code">
                         <div class="color-item">
@@ -1151,7 +1169,7 @@
                     <div class="timeline-content">
                         <div class="timeline-time">22:00</div>
                         <h3>Танцевальный марафон</h3>
-                        <p>Танцы</p>
+                        <p>Танцы до упаду</p>
                     </div>
                 </div>
                 
@@ -1238,9 +1256,20 @@
                 <button class="submit-btn" id="submit-response">Отправить ответ</button>
             </div>
             
+            <!-- Информация о локальном сохранении -->
+            <div class="local-storage-info" id="local-storage-info" style="display: none;">
+                <p><i class="fas fa-info-circle"></i> Ваш ответ сохранен локально в этом браузере.</p>
+            </div>
+            
             <!-- Админ-панель для просмотра и скачивания ответов -->
             <div class="admin-panel" id="admin-panel" style="display: none;">
                 <h3>Ответы гостей</h3>
+                
+                <div class="admin-access">
+                    <p>Все ответы сохраняются в вашем браузере. Чтобы скачать все ответы, нажмите кнопку ниже.</p>
+                    <button class="download-btn" id="download-all">Скачать все ответы</button>
+                </div>
+                
                 <div id="responses-container">
                     <table class="responses-table">
                         <thead>
@@ -1257,7 +1286,6 @@
                     </table>
                     <div id="no-responses" class="no-responses">Пока нет ответов от гостей</div>
                 </div>
-                <button class="download-btn" id="download-btn">Скачать ответы (CSV)</button>
             </div>
         </div>
     </section>
@@ -1276,13 +1304,119 @@
         <span>Ваш ответ успешно сохранен!</span>
     </div>
 
+    <!-- Подключаем EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
     <script>
+        // Инициализация EmailJS
+        (function(){
+            // ЗАМЕНИТЕ 'YOUR_USER_ID' на ваш настоящий User ID из EmailJS
+            emailjs.init("gAh3o6ZejRitxvSIm");
+        })();
+
         // Инициализация после загрузки страницы
         document.addEventListener('DOMContentLoaded', function() {
             // Скрыть лоадер
             setTimeout(() => {
                 document.getElementById('loader').classList.add('hidden');
             }, 2000);
+
+            // Функция для сохранения ответа и отправки на email
+            function saveResponse(data) {
+                // Сохраняем в локальное хранилище
+                let responses = JSON.parse(localStorage.getItem('weddingResponses')) || [];
+                responses.push(data);
+                localStorage.setItem('weddingResponses', JSON.stringify(responses));
+                
+                // Отправляем на email через EmailJS
+                // ЗАМЕНИТЕ 'YOUR_SERVICE_ID' и 'YOUR_TEMPLATE_ID' на ваши настоящие ID
+                emailjs.send("service_ip1q5dj", "template_teuat9s", {
+                    guest_name: data.name,
+                    attendance: data.attendance === 'yes' ? 'Придет' : 'Не придет',
+                    comment: data.comment || 'Нет комментария',
+                    date: data.timestamp,
+                    reply_to: "" // Можно добавить поле для email гостя, если нужно
+                })
+                .then(function(response) {
+                    console.log('Email отправлен!', response.status, response.text);
+                }, function(error) {
+                    console.log('Ошибка отправки email:', error);
+                    // Даже если email не отправился, сохраняем локально
+                });
+                
+                // Показываем информацию о локальном сохранении
+                document.getElementById('local-storage-info').style.display = 'block';
+                
+                // Обновляем таблицу ответов
+                updateResponsesTable();
+                
+                return true;
+            }
+            
+            // Обработчик формы
+            document.getElementById('submit-response').addEventListener('click', function() {
+                const name = document.getElementById('guest-name').value.trim();
+                const attendance = document.querySelector('input[name="attendance"]:checked');
+                const comment = document.getElementById('guest-comment').value.trim();
+                
+                // Проверяем заполненность обязательных полей
+                if (!name) {
+                    showMessage('Пожалуйста, введите ваше имя', 'error');
+                    return;
+                }
+                
+                if (!attendance) {
+                    showMessage('Пожалуйста, укажите, придете ли вы на свадьбу', 'error');
+                    return;
+                }
+                
+                // Собираем данные
+                const responseData = {
+                    name: name,
+                    attendance: attendance.value,
+                    comment: comment,
+                    timestamp: new Date().toLocaleString('ru-RU')
+                };
+                
+                // Показываем сообщение об отправке
+                showMessage('Отправляем ваш ответ...', 'sending');
+                
+                // Сохраняем ответ
+                setTimeout(() => {
+                    const success = saveResponse(responseData);
+                    
+                    if (success) {
+                        // Показываем сообщение об успехе
+                        showMessage('Спасибо за ваш ответ! Мы сохранили ваши данные.', 'success');
+                        
+                        // Очищаем форму
+                        document.getElementById('guest-name').value = '';
+                        document.querySelectorAll('input[name="attendance"]').forEach(input => input.checked = false);
+                        document.getElementById('guest-comment').value = '';
+                        
+                        // Создаем конфетти для праздничного эффекта
+                        createConfetti();
+                    } else {
+                        showMessage('Произошла ошибка при сохранении ответа. Попробуйте еще раз.', 'error');
+                    }
+                }, 1000);
+            });
+            
+            // Проверяем доступ к админ-панели
+            function checkAdminAccess() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('admin') === 'true') {
+                    document.getElementById('admin-panel').style.display = 'block';
+                    updateResponsesTable();
+                }
+            }
+            
+            // Вызываем проверку админского доступа
+            checkAdminAccess();
+            
+            // Обработчик для кнопки скачивания
+            document.getElementById('download-all').addEventListener('click', function() {
+                downloadResponsesCSV();
+            });
             
             // Настройка навигации
             const navContainer = document.getElementById('navContainer');
@@ -1377,21 +1511,6 @@
                 }, 5000);
             }
             
-            // Функция для сохранения ответа
-            function saveResponse(data) {
-                // Получаем существующие ответы или создаем новый массив
-                let responses = JSON.parse(localStorage.getItem('weddingResponses')) || [];
-                
-                // Добавляем новый ответ
-                responses.push(data);
-                
-                // Сохраняем обратно в localStorage
-                localStorage.setItem('weddingResponses', JSON.stringify(responses));
-                
-                // Обновляем таблицу ответов
-                updateResponsesTable();
-            }
-            
             // Функция для обновления таблицы ответов
             function updateResponsesTable() {
                 const responses = JSON.parse(localStorage.getItem('weddingResponses')) || [];
@@ -1470,63 +1589,6 @@
                 link.click();
                 document.body.removeChild(link);
             }
-            
-            // Показать админ-панель для организаторов
-            function checkAdminAccess() {
-                // Простая проверка - если в URL есть параметр admin=true
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('admin') === 'true') {
-                    document.getElementById('admin-panel').style.display = 'block';
-                    updateResponsesTable();
-                }
-            }
-            
-            // Обработка simplified формы
-            document.getElementById('submit-response').addEventListener('click', function() {
-                const name = document.getElementById('guest-name').value.trim();
-                const attendance = document.querySelector('input[name="attendance"]:checked');
-                const comment = document.getElementById('guest-comment').value.trim();
-                const messageDiv = document.getElementById('form-message');
-                
-                // Проверяем заполненность обязательных полей
-                if (!name) {
-                    showMessage('Пожалуйста, введите ваше имя', 'error');
-                    return;
-                }
-                
-                if (!attendance) {
-                    showMessage('Пожалуйста, укажите, придете ли вы на свадьбу', 'error');
-                    return;
-                }
-                
-                // Собираем данные
-                const responseData = {
-                    name: name,
-                    attendance: attendance.value,
-                    comment: comment,
-                    timestamp: new Date().toLocaleString('ru-RU')
-                };
-                
-                // Сохраняем ответ
-                saveResponse(responseData);
-                
-                // Показываем сообщение об успехе
-                showMessage('Спасибо за ваш ответ! Мы сохранили ваши данные.', 'success');
-                
-                // Очищаем форму
-                document.getElementById('guest-name').value = '';
-                document.querySelectorAll('input[name="attendance"]').forEach(input => input.checked = false);
-                document.getElementById('guest-comment').value = '';
-                
-                // Создаем конфетти для праздничного эффекта
-                createConfetti();
-            });
-            
-            // Обработчик для кнопки скачивания
-            document.getElementById('download-btn').addEventListener('click', downloadResponsesCSV);
-            
-            // Проверяем доступ к админ-панели
-            checkAdminAccess();
             
             // Плавная прокрутка для навигации
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
